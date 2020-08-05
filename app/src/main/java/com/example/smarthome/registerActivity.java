@@ -1,10 +1,14 @@
 package com.example.smarthome;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -27,18 +31,21 @@ public class registerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         getSupportActionBar().hide();
-        progressBar=(ProgressBar)findViewById(R.id.progressBar2);
+        progressBar=(ProgressBar)findViewById(R.id.progressBar);
         progressBar.setIndeterminate(false);
         progressBar.setVisibility(View.GONE);
 
 
-    } public void onBackPressed()
+    }
+    public void onBackPressed()
     {
         Intent intent=new Intent(getApplicationContext(),MainActivity.class);
         startActivity(intent);
     }
     public void register(View view)
     {
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         if(!isClickable)
             return;
         isClickable=false;
@@ -46,7 +53,7 @@ public class registerActivity extends AppCompatActivity {
         mobile=(EditText)findViewById(R.id.mobile);
         password=(EditText)findViewById(R.id.password);
         confirmPassword=(EditText)findViewById(R.id.confirm_password);
-        Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
+
 
         if(password.getText().toString().isEmpty()||mobile.getText().toString().isEmpty()||name.getText().toString().isEmpty()||confirmPassword.getText().toString().isEmpty())
         {
@@ -72,12 +79,20 @@ public class registerActivity extends AppCompatActivity {
                 super.onSuccess(statusCode, headers, response);
                 isClickable=true;
                 progressBar.setVisibility(View.GONE);
+
                 if(statusCode==200)
                 {
                     Toast.makeText(registerActivity.this, "user registered successfully", Toast.LENGTH_SHORT).show();
+                    SharedPreferences pref=getApplicationContext().getSharedPreferences("Mypref",MODE_PRIVATE);
+                    SharedPreferences.Editor edit=pref.edit();
+                    edit.putBoolean("LoggedIn",true);
+                    edit.putString("x-auth-token",headers[3].toString());
+                    edit.commit();
                     Intent intent=new Intent(getApplicationContext(),MainActivity2.class);
                     startActivity(intent);
                 }
+                else
+
                 Toast.makeText(registerActivity.this, "unable to register", Toast.LENGTH_SHORT).show();
 
             }
